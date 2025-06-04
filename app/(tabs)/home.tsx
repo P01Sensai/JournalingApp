@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Calendar, DateData } from 'react-native-calendars';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const quotes = [
   "What made you smile today?",
@@ -13,78 +12,50 @@ const quotes = [
   "Recall a challenge and how you overcame it."
 ];
 
-const STORAGE_KEY = '@journal_entries';
+const lightColors = [
+  '#FFFBEB', // Light yellow
+  '#E0F2FE', // Light blue
+  '#FEF3C7', // Amber 100
+  '#FEE2E2', // Light red/pink
+  '#ECFDF5', // Light teal
+  '#F0F9FF', // Light sky blue
+  '#FFF1F2', // Light pink
+];
 
 export default function HomeScreen() {
   const router = useRouter();
   const [quoteIndex, setQuoteIndex] = useState(0);
+  const [quoteBgColor, setQuoteBgColor] = useState(lightColors[0]);
   const [selectedDate, setSelectedDate] = useState<string>(() => {
-    // Initialize to today in 'YYYY-MM-DD' format
     return new Date().toISOString().split('T')[0];
   });
 
-  const [markedDates, setMarkedDates] = useState<Record<string, any>>({});
-
-  const loadEntriesAndMarkDates = async () => {
-    try {
-      const savedEntries = await AsyncStorage.getItem(STORAGE_KEY);
-      const entries = savedEntries ? JSON.parse(savedEntries) : [];
-
-      const marks: Record<string, any> = {};
-      entries.forEach((entry: any) => {
-        marks[entry.date] = {
-          marked: true,
-          dotColor: '#f59e0b',
-        };
-      });
-
-      marks[selectedDate] = {
-        ...marks[selectedDate],
-        selected: true,
-        selectedColor: '#f59e0b',
-      };
-
-      setMarkedDates(marks);
-    } catch (error) {
-      console.error('Failed to load entries:', error);
-      setMarkedDates({
-        [selectedDate]: {
-          selected: true,
-          selectedColor: '#f59e0b',
-        },
-      });
-    }
-  };
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setQuoteIndex((prevIndex) => (prevIndex + 1) % quotes.length);
+      Animated.sequence([
+        Animated.timing(fadeAnim, { toValue: 0, duration: 400, useNativeDriver: true }),
+        Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
+      ]).start();
+
+      setQuoteIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % quotes.length;
+
+        let newColor = quoteBgColor;
+        while (newColor === quoteBgColor) {
+          newColor = lightColors[Math.floor(Math.random() * lightColors.length)];
+        }
+        setQuoteBgColor(newColor);
+
+        return nextIndex;
+      });
     }, 4000);
 
-    loadEntriesAndMarkDates();
-
     return () => clearInterval(interval);
-  }, [selectedDate]);
-
-  // Helper to check if date is in the future compared to today
-  const isFutureDate = (dateString: string) => {
-    const today = new Date();
-    const date = new Date(dateString);
-    // Reset times for accurate day comparison
-    today.setHours(0, 0, 0, 0);
-    date.setHours(0, 0, 0, 0);
-    return date > today;
-  };
+  }, [fadeAnim, quoteBgColor]);
 
   const onDayPress = (day: DateData) => {
-    if (isFutureDate(day.dateString)) {
-      Alert.alert(
-        "Can't add future entries",
-        "You cannot add or edit entries for future dates."
-      );
-      return;
-    }
-
     setSelectedDate(day.dateString);
     router.push({
       pathname: '/write',
@@ -93,22 +64,27 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FFF8E7]">
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF8E7' }}>
       {/* Top Bar - Welcome */}
-      <View className="bg-yellow-200 px-6 py-4">
-        <Text className="text-2xl font-bold text-black">
+      <View style={{ backgroundColor: '#FEF3C7', paddingHorizontal: 24, paddingVertical: 16 }}>
+        <Text style={{ fontSize: 24, fontWeight: '700', color: '#000' }}>
           Welcome back, Pramanshu 👋
         </Text>
-        <Text className="text-base text-gray-800 mt-1">
+        <Text style={{ fontSize: 16, color: '#4B5563', marginTop: 4 }}>
           Ready to capture your thoughts today?
         </Text>
       </View>
 
       {/* Calendar */}
-      <View className="px-6 pt-4">
+      <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
         <Calendar
           onDayPress={onDayPress}
-          markedDates={markedDates}
+          markedDates={{
+            [selectedDate]: {
+              selected: true,
+              selectedColor: '#f59e0b',
+            },
+          }}
           theme={{
             todayTextColor: '#b45309',
             arrowColor: '#b45309',
@@ -122,28 +98,39 @@ export default function HomeScreen() {
             backgroundColor: 'white',
             elevation: 3,
           }}
-          // Also disable future dates in calendar UI (optional)
-          maxDate={new Date().toISOString().split('T')[0]}
         />
       </View>
 
-      {/* Rest of screen */}
-      <View className="flex-1 bg-[#FFF9F0] px-6 py-8 justify-between">
-        {/* Quotes View */}
-        <View className="bg-white p-6 rounded-2xl shadow-md min-h-[120px] justify-center mb-10">
-          <Text className="text-gray-800 text-base italic text-center">
+      {/* Quote Card */}
+      <View style={{
+        flex: 1,
+        backgroundColor: '#FFF9F0',
+        paddingHorizontal: 24,
+        paddingVertical: 32,
+        justifyContent: 'center',
+      }}>
+        <Animated.View style={{
+          backgroundColor: quoteBgColor,
+          padding: 24,
+          borderRadius: 24,
+          elevation: 5,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+          minHeight: 130,
+          justifyContent: 'center',
+          opacity: fadeAnim,
+        }}>
+          <Text style={{
+            fontSize: 16,
+            color: '#4B5563',
+            fontStyle: 'italic',
+            textAlign: 'center',
+          }}>
             {quotes[quoteIndex]}
           </Text>
-        </View>
-
-        {/* Action View */}
-        <View className="bg-black rounded-2xl py-5">
-          <TouchableOpacity onPress={() => router.push('/write')}>
-            <Text className="text-center text-white text-lg font-semibold">
-              Start Writing ✍️
-            </Text>
-          </TouchableOpacity>
-        </View>
+        </Animated.View>
       </View>
     </SafeAreaView>
   );

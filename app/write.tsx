@@ -1,83 +1,136 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
+
+const getDayName = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { weekday: 'long' });
+};
+
+const STORAGE_KEY = '@journal_entries';
+
+type EntryType = {
+  id: string;
+  date: string;
+  text: string;
+  createdAt: string;
+  updatedAt?: string;
+};
+
 export default function WriteScreen() {
-  const { date } = useLocalSearchParams();
+  const { date } = useLocalSearchParams<{ date: string }>();
   const router = useRouter();
 
-  const [entry, setEntry] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
+  const [entries, setEntries] = useState<EntryType[]>([]);
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [textInputValue, setTextInputValue] = useState('');
   const [loading, setLoading] = useState(true);
-
-  const STORAGE_KEY = '@journal_entries';
 
   useEffect(() => {
     if (!date) return;
 
-    const loadEntryForDate = async () => {
+    const loadEntries = async () => {
       try {
-        const savedEntries = await AsyncStorage.getItem(STORAGE_KEY);
-        const entries = savedEntries ? JSON.parse(savedEntries) : [];
+        const saved = await AsyncStorage.getItem(STORAGE_KEY);
+        const allEntries: EntryType[] = saved ? JSON.parse(saved) : [];
 
-        const foundEntry = entries.find((e: any) => e.date === date);
-        if (foundEntry) {
-          setEntry(foundEntry.text);
-          setIsEditing(false); // Show read-only view initially
-        } else {
-          setEntry('');
-          setIsEditing(true); // No entry, show input by default
-        }
-      } catch (error) {
-        console.error('Error loading entry for date:', error);
-        setEntry('');
-        setIsEditing(true);
+     
+        const entriesForDate = allEntries.filter((e) => e.date === date);
+        setEntries(entriesForDate);
+
+        
+        setEditingEntryId(null);
+        setTextInputValue('');
+      } catch (e) {
+        console.error('Load error', e);
       } finally {
         setLoading(false);
       }
     };
 
-    loadEntryForDate();
+    loadEntries();
   }, [date]);
 
-  const handleSave = async () => {
-    if (!entry.trim()) {
-      Alert.alert('Empty Entry', 'Please write something before saving.');
-      return;
-    }
-    if (!date) {
-      Alert.alert('Error', 'No date selected.');
-      return;
-    }
-
+  const saveEntries = async (updatedEntries: EntryType[]) => {
     try {
-      const savedEntries = await AsyncStorage.getItem(STORAGE_KEY);
-      const entries = savedEntries ? JSON.parse(savedEntries) : [];
+      
+      const saved = await AsyncStorage.getItem(STORAGE_KEY);
+      const allEntries: EntryType[] = saved ? JSON.parse(saved) : [];
 
-      const entryIndex = entries.findIndex((e: any) => e.date === date);
+     
+      const filtered = allEntries.filter((e) => e.date !== date);
 
-      if (entryIndex >= 0) {
-        entries[entryIndex].text = entry.trim();
-        entries[entryIndex].updatedAt = new Date().toISOString();
-      } else {
-        entries.unshift({
-          id: Date.now().toString(),
-          date,
-          text: entry.trim(),
-          createdAt: new Date().toISOString(),
-        });
-      }
+      
+      const combined = [...filtered, ...updatedEntries];
 
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(combined));
 
-      Alert.alert('Saved ✅', 'Your journal entry has been saved.');
-      setIsEditing(false); // Switch to read-only view after save
-    } catch (error) {
-      Alert.alert('Error', 'Failed to save your entry.');
-      console.error(error);
+      
+      setEntries(updatedEntries);
+      setEditingEntryId(null);
+      setTextInputValue('');
+      Alert.alert('Saved ✅', 'Your entry has been saved.');
+    } catch (e) {
+      Alert.alert('Error', 'Failed to save entry.');
+      console.error(e);
     }
+  };
+
+  const onAddNew = () => {
+    setEditingEntryId('new'); 
+    setTextInputValue('');
+  };
+
+  const onEdit = (id: string, currentText: string) => {
+    setEditingEntryId(id);
+    setTextInputValue(currentText);
+  };
+
+  const onCancelEdit = () => {
+    setEditingEntryId(null);
+    setTextInputValue('');
+  };
+
+  const onSaveEdit = () => {
+    if (!textInputValue.trim()) {
+      Alert.alert('Empty Entry', 'Please enter some text before saving.');
+      return;
+    }
+
+    let updatedEntries: EntryType[] = [];
+
+    if (editingEntryId === 'new') {
+      // Add new entry
+      const newEntry: EntryType = {
+        id: Date.now().toString(),
+        date: date!,
+        text: textInputValue.trim(),
+        createdAt: new Date().toISOString(),
+      };
+      updatedEntries = [newEntry, ...entries];
+    } else {
+      // Update existing entry
+      updatedEntries = entries.map((entry) =>
+        entry.id === editingEntryId
+          ? { ...entry, text: textInputValue.trim(), updatedAt: new Date().toISOString() }
+          : entry
+      );
+    }
+
+    saveEntries(updatedEntries);
   };
 
   if (loading) {
@@ -89,45 +142,128 @@ export default function WriteScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FFF8E7] px-6 pt-12">
-      <Text className="text-2xl font-bold text-black mb-4">
-        Writing for: {date}
-      </Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF8E7', paddingHorizontal: 20, paddingTop: 16 }}>
+      {/* Date and Day top right */}
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 16 }}>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#92400e' }}>{date}</Text>
+          <Text style={{ fontSize: 14, color: '#b45309' }}>{getDayName(date!)}</Text>
+        </View>
+      </View>
 
-      {isEditing ? (
-        <>
-          <TextInput
-            multiline
-            placeholder="Start journaling here..."
-            value={entry}
-            onChangeText={setEntry}
-            className="h-64 text-base bg-white p-4 rounded-2xl shadow-md text-gray-800"
-          />
+      <ScrollView style={{ flex: 1, marginBottom: 16 }}>
+        {/* Existing entries list */}
+        {entries.length === 0 && editingEntryId !== 'new' && (
+          <Text style={{ fontSize: 16, color: '#555', textAlign: 'center', marginVertical: 24 }}>
+            No entries yet for this date.
+          </Text>
+        )}
 
-          <TouchableOpacity
-            onPress={handleSave}
-            className="bg-black py-4 rounded-2xl mt-6"
+        {entries.map((entry) => (
+          <View
+            key={entry.id}
+            style={{
+              backgroundColor: 'white',
+              padding: 16,
+              borderRadius: 16,
+              marginBottom: 12,
+              shadowColor: '#000',
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 2,
+              position: 'relative',
+            }}
           >
-            <Text className="text-center text-white text-lg font-semibold">
-              Save Entry 💾
-            </Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <>
-          <View className="bg-white p-6 rounded-2xl shadow-md min-h-[120px]">
-            <Text className="text-gray-800 text-base">{entry}</Text>
+            <Text style={{ color: '#444', fontSize: 16, marginBottom: 8 }}>{entry.text}</Text>
+            <TouchableOpacity
+              onPress={() => onEdit(entry.id, entry.text)}
+              style={{
+                position: 'absolute',
+                top: 12,
+                right: 12,
+                backgroundColor: '#fbbf24', 
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 12,
+              }}
+            >
+              <Text style={{ color: '#92400e', fontWeight: '600' }}>Edit ✏️</Text>
+            </TouchableOpacity>
           </View>
+        ))}
+      </ScrollView>
 
-          <TouchableOpacity
-            onPress={() => setIsEditing(true)}
-            className="bg-yellow-500 py-4 rounded-2xl mt-6"
+      {/* Add new entry button */}
+      {editingEntryId !== 'new' && (
+        <TouchableOpacity
+          onPress={onAddNew}
+          style={{
+            backgroundColor: '#f59e0b', 
+            padding: 14,
+            borderRadius: 28,
+            alignItems: 'center',
+            marginBottom: 8,
+          }}
+        >
+          <Text style={{ color: 'white', fontWeight: '700', fontSize: 20 }}>＋ Add Entry</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Text Input for editing or adding */}
+      {editingEntryId !== null && (
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <View
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 16,
+              shadowColor: '#000',
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+            }}
           >
-            <Text className="text-center text-black text-lg font-semibold">
-              Edit Entry ✏️
-            </Text>
-          </TouchableOpacity>
-        </>
+            <TextInput
+              multiline
+              placeholder="Write your journal entry..."
+              value={textInputValue}
+              onChangeText={setTextInputValue}
+              style={{
+                minHeight: 100,
+                fontSize: 16,
+                color: '#333',
+                textAlignVertical: 'top',
+              }}
+            />
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 }}>
+              <TouchableOpacity
+                onPress={onCancelEdit}
+                style={{
+                  backgroundColor: '#ef4444', 
+                  paddingVertical: 10,
+                  paddingHorizontal: 20,
+                  borderRadius: 12,
+                }}
+              >
+                <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={onSaveEdit}
+                style={{
+                  backgroundColor: '#10b981', 
+                  paddingVertical: 10,
+                  paddingHorizontal: 20,
+                  borderRadius: 12,
+                }}
+              >
+                <Text style={{ color: 'white', fontWeight: '600' }}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
       )}
     </SafeAreaView>
   );
