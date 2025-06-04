@@ -8,7 +8,6 @@ import Profile from './profile';
 
 const Tab = createBottomTabNavigator();
 
-// Define the icon name type exactly as Ionicons expects
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 export default function TabsLayout() {
@@ -17,7 +16,7 @@ export default function TabsLayout() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: IoniconName; // use strict typing here
+          let iconName: IoniconName; 
 
           if (route.name === 'home') {
             iconName = focused ? 'home' : 'home-outline';
@@ -26,14 +25,14 @@ export default function TabsLayout() {
           } else if (route.name === 'profile') {
             iconName = focused ? 'person' : 'person-outline';
           } else {
-            iconName = 'help-circle'; // fallback icon
+            iconName = 'help-circle'; 
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#000',
         tabBarInactiveTintColor: '#666',
-        tabBarStyle: { backgroundColor: '#FFF8E7' }, // light warm yellow
+        tabBarStyle: { backgroundColor: '#FFF8E7' }, 
       })}
     >
       <Tab.Screen

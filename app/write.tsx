@@ -113,7 +113,7 @@ export default function WriteScreen() {
     let updatedEntries: EntryType[] = [];
 
     if (editingEntryId === 'new') {
-      // Add new entry
+     
       const newEntry: EntryType = {
         id: Date.now().toString(),
         date: date!,
@@ -122,7 +122,7 @@ export default function WriteScreen() {
       };
       updatedEntries = [newEntry, ...entries];
     } else {
-      // Update existing entry
+     
       updatedEntries = entries.map((entry) =>
         entry.id === editingEntryId
           ? { ...entry, text: textInputValue.trim(), updatedAt: new Date().toISOString() }

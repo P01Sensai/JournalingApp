@@ -7,7 +7,6 @@ import Profile from './profile';
 
 const Tab = createBottomTabNavigator();
 
-// Define a safe Ionicon type
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 export default function Tabs() {
