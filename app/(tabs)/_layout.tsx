@@ -4,7 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 import Home from './home';
 import Entries from './entries';
-import Memorable from './memorable'; // 👈 Import memorable screen
+import Memorable from './memorable'; 
 import Profile from './profile';
 
 const Tab = createBottomTabNavigator();
@@ -24,7 +24,7 @@ export default function TabsLayout() {
           } else if (route.name === 'entries') {
             iconName = focused ? 'book' : 'book-outline';
           } else if (route.name === 'memorable') {
-            iconName = focused ? 'heart' : 'heart-outline'; // ❤️ Memorable
+            iconName = focused ? 'heart' : 'heart-outline'; 
           } else if (route.name === 'profile') {
             iconName = focused ? 'person' : 'person-outline';
           } else {

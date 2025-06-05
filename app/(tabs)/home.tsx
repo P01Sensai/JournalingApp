@@ -14,13 +14,13 @@ const quotes = [
 ];
 
 const lightColors = [
-  '#FFFBEB', // Light yellow
-  '#E0F2FE', // Light blue
-  '#FEF3C7', // Amber 100
-  '#FEE2E2', // Light red/pink
-  '#ECFDF5', // Light teal
-  '#F0F9FF', // Light sky blue
-  '#FFF1F2', // Light pink
+  '#FFFBEB', 
+  '#E0F2FE', 
+  '#FEF3C7', 
+  '#FEE2E2', 
+  '#ECFDF5', 
+  '#F0F9FF', 
+  '#FFF1F2', 
 ];
 
 export default function HomeScreen() {
@@ -72,7 +72,7 @@ export default function HomeScreen() {
           backgroundColor: '#FEF3C7',
           paddingHorizontal: 24,
           paddingVertical: 16,
-          paddingRight: 16, // Added right padding to prevent overflow
+          paddingRight: 16, 
         }}
       >
         <View
@@ -82,7 +82,7 @@ export default function HomeScreen() {
             alignItems: 'center',
           }}
         >
-          <View style={{ flex: 1, paddingRight: 12 /* space between text and icon */ }}>
+          <View style={{ flex: 1, paddingRight: 12  }}>
             <Text style={{ fontSize: 24, fontWeight: '700', color: '#000' }}>
               Welcome back, Pramanshu 👋
             </Text>

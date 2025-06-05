@@ -6,10 +6,12 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
+import { useRouter } from 'expo-router';
 
 type JournalEntry = {
   id: string;
@@ -23,6 +25,7 @@ const STORAGE_KEY = '@journal_entries';
 export default function MemorableEntriesScreen() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const loadEntries = async () => {
     try {
@@ -35,6 +38,30 @@ export default function MemorableEntriesScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const deleteEntry = async (id: string) => {
+    Alert.alert('Delete Entry', 'Are you sure you want to delete this entry?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const stored = await AsyncStorage.getItem(STORAGE_KEY);
+            const allEntries: JournalEntry[] = stored ? JSON.parse(stored) : [];
+
+            const updated = allEntries.filter((entry) => entry.id !== id);
+            const updatedMemorable = updated.filter((entry) => entry.memorable);
+
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+            setEntries(updatedMemorable);
+          } catch (e) {
+            console.error('Failed to delete entry', e);
+          }
+        },
+      },
+    ]);
   };
 
   useEffect(() => {
@@ -50,12 +77,13 @@ export default function MemorableEntriesScreen() {
           <Text style={styles.entryDate}>{format(date, 'dd MMM yyyy, EEE, p')}</Text>
         </View>
         <Text style={styles.entryText}>{item.text}</Text>
-        <Ionicons
-          name="heart"
-          size={20}
-          color="#ef4444"
-          style={styles.heartIcon}
-        />
+
+        <View style={styles.entryActions}>
+          <Ionicons name="heart" size={20} color="#ef4444" />
+          <TouchableOpacity onPress={() => deleteEntry(item.id)}>
+            <Ionicons name="trash-outline" size={20} color="#ef4444" />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -79,7 +107,9 @@ export default function MemorableEntriesScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.topBar}>
-        <Ionicons name="heart" size={22} color="#ef4444" />
+        <TouchableOpacity onPress={() => router.push('/entries')}>
+          <Ionicons name="arrow-back" size={22} color="#92400e" />
+        </TouchableOpacity>
         <Text style={styles.title}>Memorable Entries</Text>
         <Ionicons name="heart" size={22} color="#ef4444" />
       </View>
@@ -146,9 +176,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 20,
   },
-  heartIcon: {
+  entryActions: {
     position: 'absolute',
     right: 12,
     bottom: 12,
+    flexDirection: 'row',
+    gap: 12,
   },
 });
