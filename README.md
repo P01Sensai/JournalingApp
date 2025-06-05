@@ -16,7 +16,7 @@ A simple and intuitive journaling mobile app built with React Native and Expo.
 
 ---
 
-## Design Rationale
+## Design
 
 The app is designed to provide a smooth journaling experience with easy navigation between screens via a bottom tab bar. It emphasizes:
 
