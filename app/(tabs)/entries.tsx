@@ -32,7 +32,7 @@ export default function EntriesScreen() {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       const parsed: JournalEntry[] = stored ? JSON.parse(stored) : [];
       setEntries(parsed);
-      setFilteredEntries(parsed); // default full list
+      setFilteredEntries(parsed);
     } catch (error) {
       console.error('Failed to load entries', error);
     } finally {
@@ -71,25 +71,44 @@ export default function EntriesScreen() {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
+  const deleteEntry = async (id: string) => {
+    const updated = entries.filter(entry => entry.id !== id);
+    setEntries(updated);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  };
+
   const renderEntry = ({ item }: { item: JournalEntry }) => {
     const date = new Date(item.createdAt);
     return (
       <View style={styles.entryCard}>
         <View style={styles.entryHeader}>
           <Text style={styles.entryId}>JE-{item.id.slice(-6)}</Text>
-          <Text style={styles.entryDate}>{format(date, 'dd MMM yyyy, EEE, p')}</Text>
+          <Text style={styles.entryDate}>
+            {format(date, 'dd MMM yyyy, EEE, p')}
+          </Text>
         </View>
+
         <Text style={styles.entryText}>{item.text}</Text>
-        <TouchableOpacity
-          style={styles.heartButton}
-          onPress={() => toggleMemorable(item.id)}
-        >
-          <Ionicons
-            name={item.memorable ? 'heart' : 'heart-outline'}
-            size={20}
-            color={item.memorable ? '#ef4444' : '#9ca3af'}
-          />
-        </TouchableOpacity>
+
+        <View style={styles.actionButtons}>
+          <TouchableOpacity onPress={() => toggleMemorable(item.id)}>
+            <Ionicons
+              name={item.memorable ? 'heart' : 'heart-outline'}
+              size={20}
+              color={item.memorable ? '#ef4444' : '#9ca3af'}
+              style={styles.icon}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => deleteEntry(item.id)}>
+            <Ionicons
+              name="trash-outline"
+              size={20}
+              color="#ef4444"
+              style={styles.icon}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -112,7 +131,6 @@ export default function EntriesScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Filter bar */}
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => setFilterToday(prev => !prev)}>
           <Ionicons
@@ -195,9 +213,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 20,
   },
-  heartButton: {
+  actionButtons: {
     position: 'absolute',
     right: 12,
     bottom: 12,
+    flexDirection: 'row',
+    gap: 16,
+  },
+  icon: {
+    marginLeft: 12,
   },
 });
