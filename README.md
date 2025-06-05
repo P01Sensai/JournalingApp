@@ -1,39 +1,56 @@
-# Journaling App
+# 📝 JournalingApp
 
-A simple and intuitive journaling mobile app built with React Native and Expo.
+A clean and thoughtful journaling app built with React Native and Expo. Users can write, view, and filter daily journal entries, mark memorable ones, and view them on a dedicated screen.
 
----
+## 📷 Demo Screenshots
 
-## Technologies Used
-
-- **React Native** — For building the mobile user interface
-- **Expo SDK** — To simplify development and testing on iOS/Android
-- **expo-router** — For navigation with a bottom tab bar
-- **AsyncStorage** — For local persistent storage of journal entries
-- **TypeScript** — To improve code quality and maintainability
-- **date-fns** — For date formatting
-- **React Native Safe Area Context** — For safe area support on devices
+<img src="./screenshots/home.jpg" width="250" />
+<img src="./screenshots/writeEntry.jpg" width="250" />
+<img src="./screenshots/entries.jpg" width="250" />
+<img src="./screenshots/typeInput.jpg" width="250" />
+<img src="./screenshots/memorable.jpg" width="250" />
 
 ---
 
-## Design
+## ⚙️ Technologies Used
 
-The app is designed to provide a smooth journaling experience with easy navigation between screens via a bottom tab bar. It emphasizes:
-
-- **Simplicity:** Minimalist design with clear typography and ample spacing
-- **Responsiveness:** Works well on various screen sizes and platforms
-- **User Control:** Users can add, edit, delete, and mark entries as memorable
-- **Feedback:** Immediate alerts on save and error prevention when input is empty
-
-The design balances aesthetics and usability to ensure users can focus on writing and managing their journal entries without distraction.
+- [React Native](https://reactnative.dev/)
+- [Expo SDK](https://docs.expo.dev/)
+- [expo-router](https://expo.github.io/router/docs)
+- [NativeWind (Tailwind CSS for React Native)](https://www.nativewind.dev/)
+- [@react-native-async-storage/async-storage](https://react-native-async-storage.github.io/async-storage/)
+- [react-native-calendars](https://github.com/wix/react-native-calendars)
+- [date-fns](https://date-fns.org/)
 
 ---
 
-## How to Run the App Locally
+## 🎨 Brief Design Rationale
+
+The app focuses on simplicity and clarity, using soft colors and a minimalistic layout to encourage reflective writing.
+The tab-based navigation ensures a user-friendly experience, while entry sorting, filtering, and tagging features enhance usability.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Make sure you have:
+
+- **Node.js** installed
+- **Expo CLI** installed (`npm install -g expo-cli`)
+- **Expo Go** app on your mobile device (for preview)
+
+All dependencies (`expo-router`, `nativewind`, `async-storage`, `react-native-calendars`, etc.) are listed in the `package.json`.
+
+---
+
+### How to Run the App Locally
 
 1. **Clone the repository:**
 
    ```bash
    git clone https://github.com/P01Sensai/JournalingApp.git
    cd JournalingApp
+
 
