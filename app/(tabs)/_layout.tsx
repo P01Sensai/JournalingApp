@@ -4,6 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 import Home from './home';
 import Entries from './entries';
+import Memorable from './memorable'; // 👈 Import memorable screen
 import Profile from './profile';
 
 const Tab = createBottomTabNavigator();
@@ -16,23 +17,25 @@ export default function TabsLayout() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: IoniconName; 
+          let iconName: IoniconName;
 
           if (route.name === 'home') {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'entries') {
             iconName = focused ? 'book' : 'book-outline';
+          } else if (route.name === 'memorable') {
+            iconName = focused ? 'heart' : 'heart-outline'; // ❤️ Memorable
           } else if (route.name === 'profile') {
             iconName = focused ? 'person' : 'person-outline';
           } else {
-            iconName = 'help-circle'; 
+            iconName = 'help-circle';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#000',
         tabBarInactiveTintColor: '#666',
-        tabBarStyle: { backgroundColor: '#FFF8E7' }, 
+        tabBarStyle: { backgroundColor: '#FFF8E7' },
       })}
     >
       <Tab.Screen
@@ -44,6 +47,11 @@ export default function TabsLayout() {
         name="entries"
         component={Entries}
         options={{ title: 'Entries' }}
+      />
+      <Tab.Screen
+        name="memorable"
+        component={Memorable}
+        options={{ title: 'Memorable' }}
       />
       <Tab.Screen
         name="profile"

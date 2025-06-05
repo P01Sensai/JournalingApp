@@ -3,9 +3,9 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
-  ScrollView,
   StyleSheet,
+  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,21 +20,18 @@ type JournalEntry = {
 
 const STORAGE_KEY = '@journal_entries';
 
-export default function EntriesScreen() {
+export default function MemorableEntriesScreen() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [filteredEntries, setFilteredEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterToday, setFilterToday] = useState(false);
-  const [filterMemorable, setFilterMemorable] = useState(false);
 
   const loadEntries = async () => {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       const parsed: JournalEntry[] = stored ? JSON.parse(stored) : [];
-      setEntries(parsed);
-      setFilteredEntries(parsed); // default full list
+      const memorableEntries = parsed.filter((entry) => entry.memorable);
+      setEntries(memorableEntries);
     } catch (error) {
-      console.error('Failed to load entries', error);
+      console.error('Failed to load memorable entries', error);
     } finally {
       setLoading(false);
     }
@@ -43,33 +40,6 @@ export default function EntriesScreen() {
   useEffect(() => {
     loadEntries();
   }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [filterToday, filterMemorable, entries]);
-
-  const applyFilters = () => {
-    let result = [...entries];
-
-    if (filterToday) {
-      const today = new Date().toISOString().split('T')[0];
-      result = result.filter(entry => entry.createdAt.startsWith(today));
-    }
-
-    if (filterMemorable) {
-      result = result.filter(entry => entry.memorable);
-    }
-
-    setFilteredEntries(result);
-  };
-
-  const toggleMemorable = async (id: string) => {
-    const updated = entries.map(entry =>
-      entry.id === id ? { ...entry, memorable: !entry.memorable } : entry
-    );
-    setEntries(updated);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  };
 
   const renderEntry = ({ item }: { item: JournalEntry }) => {
     const date = new Date(item.createdAt);
@@ -80,16 +50,12 @@ export default function EntriesScreen() {
           <Text style={styles.entryDate}>{format(date, 'dd MMM yyyy, EEE, p')}</Text>
         </View>
         <Text style={styles.entryText}>{item.text}</Text>
-        <TouchableOpacity
-          style={styles.heartButton}
-          onPress={() => toggleMemorable(item.id)}
-        >
-          <Ionicons
-            name={item.memorable ? 'heart' : 'heart-outline'}
-            size={20}
-            color={item.memorable ? '#ef4444' : '#9ca3af'}
-          />
-        </TouchableOpacity>
+        <Ionicons
+          name="heart"
+          size={20}
+          color="#ef4444"
+          style={styles.heartIcon}
+        />
       </View>
     );
   };
@@ -97,44 +63,29 @@ export default function EntriesScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <Text>Loading entries...</Text>
+        <Text>Loading memorable entries...</Text>
       </View>
     );
   }
 
-  if (filteredEntries.length === 0) {
+  if (entries.length === 0) {
     return (
       <View style={styles.centered}>
-        <Text style={{ color: '#6b7280' }}>No entries match your filter.</Text>
+        <Text style={{ color: '#6b7280' }}>No memorable entries yet.</Text>
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.container}>
-      {/* Filter bar */}
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => setFilterToday(prev => !prev)}>
-          <Ionicons
-            name="funnel-outline"
-            size={22}
-            color={filterToday ? '#f59e0b' : '#6b7280'}
-          />
-        </TouchableOpacity>
-
-        <Text style={styles.title}>Your Journal Entries</Text>
-
-        <TouchableOpacity onPress={() => setFilterMemorable(prev => !prev)}>
-          <Ionicons
-            name="heart"
-            size={22}
-            color={filterMemorable ? '#ef4444' : '#6b7280'}
-          />
-        </TouchableOpacity>
+        <Ionicons name="heart" size={22} color="#ef4444" />
+        <Text style={styles.title}>Memorable Entries</Text>
+        <Ionicons name="heart" size={22} color="#ef4444" />
       </View>
 
       <FlatList
-        data={filteredEntries}
+        data={entries}
         keyExtractor={(item) => item.id}
         renderItem={renderEntry}
         scrollEnabled={false}
@@ -195,7 +146,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 20,
   },
-  heartButton: {
+  heartIcon: {
     position: 'absolute',
     right: 12,
     bottom: 12,
