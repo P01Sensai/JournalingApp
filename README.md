@@ -1,50 +1,112 @@
-# Welcome to your Expo app 👋
+# 📝 JournalingApp
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A clean and thoughtful journaling app built with React Native and Expo. Users can write, view, and filter daily journal entries, mark memorable ones, and view them on a dedicated screen.
 
-## Get started
+## 📷 Demo Screenshots
 
-1. Install dependencies
+<p align="center">
+  <img src="./screenshots/home.jpg" width="180" style="margin-right: 20px;" />
+  <img src="./screenshots/writeEntry.jpg" width="180" style="margin-right: 20px;" />
+  <img src="./screenshots/typeInput.jpg" width="180" style="margin-right: 20px;"/>
+  <img src="./screenshots/entries.jpg" width="180" style="margin-right: 20px;" />
+  <img src="./screenshots/memorable.jpg" width="180" />
+</p>
 
+
+
+---
+
+## ⚙️ Technologies Used
+
+- [React Native](https://reactnative.dev/)
+- [Expo SDK](https://docs.expo.dev/)
+- [expo-router](https://expo.github.io/router/docs)
+- [NativeWind (Tailwind CSS for React Native)](https://www.nativewind.dev/)
+- [@react-native-async-storage/async-storage](https://react-native-async-storage.github.io/async-storage/)
+- [react-native-calendars](https://github.com/wix/react-native-calendars)
+- [date-fns](https://date-fns.org/)
+
+---
+
+## 🎨 Brief Design Rationale
+
+The app focuses on simplicity and clarity, using soft colors and a minimalistic layout to encourage reflective writing.
+The tab-based navigation ensures a user-friendly experience, while entry sorting, filtering, and tagging features enhance usability.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Make sure you have:
+
+- **Node.js** installed
+- **Expo CLI** installed (`npm install -g expo-cli`)
+- **Expo Go** app on your mobile device (for preview)
+
+All dependencies (`expo-router`, `nativewind`, `async-storage`, `react-native-calendars`, etc.) are listed in the `package.json`.
+
+---
+
+### How to Run the App Locally
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/P01Sensai/JournalingApp.git
+   cd JournalingApp
+
+2. **Install dependencies:**
    ```bash
    npm install
-   ```
+   # or
+   yarn install
 
-2. Start the app
-
+3. **Start the Expo development server:**
    ```bash
    npx expo start
-   ```
 
-In the output, you'll find options to open the app in a
+4. **Run on your device or simulator:**
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   📱 Use the Expo Go app on your Android/iOS device and scan the QR code.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+   💻 Or run on an emulator/simulator from the Expo CLI menu.  
 
-## Get a fresh project
 
-When you're ready, run:
+---
 
-```bash
-npm run reset-project
-```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## ✅ Usability Heuristics Focus
 
-## Learn more
+The app incorporates Jakob Nielsen’s 10 Usability Heuristics:
 
-To learn more about developing your project with Expo, look at the following resources:
+1. **Visibility of System Status:**  
+   Feedback is given for saving, loading, and deleting entries.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+2. **Match Between System and the Real World:**  
+   Uses familiar concepts like a calendar and timestamps to reflect real-world journaling.
 
-## Join the community
+3. **User Control and Freedom:**  
+   Users can delete entries and navigate back to the home screen freely.
 
-Join our community of developers creating universal apps.
+4. **Consistency and Standards:**  
+   Icons, layout, and interactions follow common mobile app conventions.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+5. **Error Prevention:**  
+   The app restricts empty entries and confirms key actions, reducing potential errors.
+
+6. **Recognition Rather Than Recall:**  
+   Journal entries are clearly labeled with unique IDs and timestamps.
+
+7. **Flexibility and Efficiency of Use:**  
+   Users can mark memorable entries as favorites and access them quickly.
+
+8. **Aesthetic and Minimalist Design:**  
+   The interface uses a clean, light design with clear spacing for readability and focus.
+
+9. **Help Users Recognize, Diagnose, and Recover from Errors:**  
+   Simple error messages are logged to the console to assist in debugging.
+
+10. **Help and Documentation:**  
+   This README provides clear onboarding instructions and guidance.
